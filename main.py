@@ -9,13 +9,20 @@ from adafruit_debouncer import Debouncer
 
 time.sleep(1)
 
+key_combination = None
+
 
 class Button:
+
     _keyboard = Keyboard(usb_hid.devices)
+    _layout = KeyboardLayoutUS(_keyboard)
 
     def __init__(
-        self, board_pin, keycodes, debounce_interval=0.01, pull=digitalio.Pull.DOWN
+        self, board_pin, keycodes, write_content, debounce_interval=0.01, pull=digitalio.Pull.DOWN
     ):
+        self._record_btn_state = False
+        self._write_content = write_content
+        self._layout = Button._layout
         self._board_pin = board_pin
         self._keycodes = keycodes
         self._pin = digitalio.DigitalInOut(board_pin)
@@ -29,26 +36,31 @@ class Button:
             self._fell_action = Button._keyboard.press
             self._rose_action = Button._keyboard.release
 
+    # def key_combination(self,):
+
     def update(self):
         debouncer = self._debouncer
         debouncer.update()
-        if debouncer.fell:
-            self._fell_action(*self._keycodes)
-        elif debouncer.rose:
-            self._rose_action(*self._keycodes)
+        if debouncer.rose:
+            self._layout.write(*self._write_content)
+            # self._rose_action(*self._keycodes)
+        elif debouncer.fell:
+            self._layout.write(' ')
+            # self._fell_action(*self._keycodes)
 
 
 buttons = [
-    Button(board.GP1, [Keycode.ONE]),
-    Button(board.GP2, [Keycode.TWO]),
-    Button(board.GP3, [Keycode.THREE]),
-    Button(board.GP4, [Keycode.FOUR]),
-    Button(board.GP5, [Keycode.FIVE]),
-    Button(board.GP6, [Keycode.SIX]),
-    Button(board.GP7, [Keycode.SEVEN]),
-    Button(board.GP8, [Keycode.EIGHT]),
-    Button(board.GP9, [Keycode.NINE])
+    Button(board.GP1, [Keycode.ONE], ['wocaonima xiaobizaizi santianzhineishaleni \n']),
+    Button(board.GP2, [Keycode.TWO], ['233 ']),
+    Button(board.GP3, [Keycode.THREE], ['`exec slam6`']),
+    Button(board.GP4, [Keycode.FOUR], ['wocaonima ']),
+    Button(board.GP5, [Keycode.FIVE], ['wocaonima ']),
+    Button(board.GP6, [Keycode.SIX], ['wocaonima ']),
+    Button(board.GP7, [Keycode.SEVEN], ['wocaonima ']),
+    Button(board.GP8, [Keycode.EIGHT], [' ']),
+    Button(board.GP9, [Keycode.NINE], [' '])
 ]
+
 while True:
     for b in buttons:
         b.update()
